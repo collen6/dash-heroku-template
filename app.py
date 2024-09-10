@@ -20,24 +20,45 @@ fg_pct_by_diff = mj_df.groupby('Diff_Bins', observed=True)['FG_PCT'].mean().rese
 fig = px.bar(fg_pct_by_diff, x='Diff_Bins', y='FG_PCT',
              labels={'Diff_Bins': 'Game Difficulty (Point Differential)', 'FG_PCT': 'Average FG %'},
              title="Michael Jordan's Average FG% by Game Difficulty",
-             text_auto=True)
+             text_auto=True,
+             color='Diff_Bins')  # Add color for more visual appeal
 
 # Customize layout
-fig.update_layout(yaxis_tickformat='.0%', xaxis_title='Game Difficulty (Point Differential)', 
-                  yaxis_title='Average Field Goal Percentage', title_x=0.5)
+fig.update_layout(yaxis_tickformat='.0%',
+                  xaxis_title='Game Difficulty (Point Differential)', 
+                  yaxis_title='Average Field Goal Percentage',
+                  title_x=0.5,
+                  template='plotly_dark')  # Use Plotly's dark template for a modern look
 
-# Create app
+# Create the Dash app
 app = dash.Dash(__name__)
-server = app.server
+server = app.server  # For Heroku deployment
 
+# App layout with enhanced formatting
 app.layout = html.Div(
-    [
-        html.H1("Michael Jordan's Field Goal Percentage by Game Difficulty"),
-        dcc.Markdown(children="This app shows how Michael Jordan's field goal percentage varied based on the difficulty of the game."),
-        html.H2("Average Field Goal Percentage by Game Difficulty"),
-        dcc.Graph(figure=fig)
+    style={'backgroundColor': '#f9f9f9', 'padding': '40px', 'fontFamily': 'Arial, sans-serif'},  # Background styling
+    children=[
+        html.H1("Michael Jordan's Performance Dashboard", 
+                style={'textAlign': 'center', 'color': '#333', 'fontWeight': 'bold'}),
+        
+        dcc.Markdown(children="""
+        This dashboard visualizes how Michael Jordan's field goal percentage varied based on the 
+        difficulty of the game. Games are categorized into different point differential bins 
+        (e.g., 'Big Win', 'Close Loss', etc.).
+        """, style={'textAlign': 'center', 'color': '#666'}),
+        
+        html.H2("Average Field Goal Percentage by Game Difficulty", 
+                style={'textAlign': 'center', 'marginTop': '40px', 'color': '#333'}),
+
+        # Graph component with the formatted figure
+        dcc.Graph(
+            id='fg_pct_bar_chart',
+            figure=fig,
+            config={'displayModeBar': False}  # Hide Plotly mode bar for a cleaner look
+        )
     ]
 )
 
+# Run the app
 if __name__ == '__main__':
     app.run_server(debug=False)
