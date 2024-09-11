@@ -10,19 +10,19 @@ from dash import html
 from dash.dependencies import Input, Output
 
 
-# In[2]:
+# In[4]:
 
 
 mj_df = pd.read_csv("https://sports-statistics.com/database/basketball-data/nba/michael-jordan-nba-career-regular-season-stats-by-game.csv", low_memory=False)
 
 
-# In[3]:
+# In[5]:
 
 
 mj_df.head().T
 
 
-# In[4]:
+# In[6]:
 
 
 # Calculate career averages for key metrics
@@ -36,7 +36,7 @@ career_stats_df.columns = ['Metric', 'Career Average (Per Game)']
 print(career_stats_df)
 
 
-# In[5]:
+# In[7]:
 
 
 # Calculate career totals for key metrics
@@ -50,7 +50,7 @@ career_totals_df.columns = ['Metric', 'Career Total (All Games)']
 print(career_totals_df)
 
 
-# In[6]:
+# In[8]:
 
 
 fig_avg = px.bar(career_stats_df, x='Metric', y='Career Average (Per Game)',
@@ -76,7 +76,7 @@ fig_avg.update_traces(
 fig_avg.show()
 
 
-# In[7]:
+# In[9]:
 
 
 fig_totals = px.bar(career_totals_df, x='Metric', y='Career Total (All Games)',
@@ -102,7 +102,7 @@ fig_totals.update_traces(
 fig_totals.show()
 
 
-# In[11]:
+# In[10]:
 
 
 # Create bins for point differential
@@ -142,7 +142,7 @@ fig.update_traces(
 fig.show()
 
 
-# In[13]:
+# In[11]:
 
 
 fig1 = px.line(mj_df, x='Age', y=['PTS', 'AST', 'TRB', 'MP'],
@@ -168,34 +168,39 @@ fig1.update_traces(line=dict(width=1.5))
 fig1.show()
 
 
-# In[15]:
+# In[47]:
 
 
-# Replace '1' with 'Win' and '0' with 'Loss' in the 'Win' column for better labels
-mj_df['Win'] = mj_df['Win'].replace({'1': 'Win', '0': 'Loss'})
+# Convert 'Win' column to categorical strings for discrete color mapping
+mj_df['Win'] = mj_df['Win'].astype(str).replace({'1': 'Win', '0': 'Loss'})
 
-# Scatter plot: Points vs Minutes Played (colored by Wins or Losses)
-fig_scatter = px.scatter(mj_df, x='MP', y='PTS', color='Win',
-                 labels={'MP': 'Minutes Played', 'PTS': 'Points Scored', 'Win': 'Result'},
-                 title='Points Scored vs Minutes Played (Colored by Wins and Losses)',
-                 color_discrete_map={'Win': 'deepskyblue', 'Loss': 'orange'},  # Bright colors for better contrast
-                 template='plotly_dark')  # Use dark template for consistency
+# Scatter plot: Points vs Minutes Played (colored by Wins and Losses)
+fig_scatter = px.scatter(
+    mj_df, 
+    x='MP', 
+    y='PTS', 
+    color='Win',  # Use 'Win' as a discrete category
+    labels={'MP': 'Minutes Played', 'PTS': 'Points Scored', 'Win': 'Game Result'},
+    title='Points Scored vs Minutes Played (Colored by Wins and Losses)',
+    color_discrete_map={'Win': 'deepskyblue', 'Loss': 'orange'},  # Bright colors for better visibility on dark background
+    template='plotly_dark'  # Dark theme
+)
 
 # Customize layout
 fig_scatter.update_layout(
     title_x=0.5,  # Center the title
-    font=dict(family="Arial, sans-serif", size=14, color="white"),  # Consistent font
+    font=dict(family="Arial, sans-serif", size=14, color="white"),  # White text for better contrast
     xaxis_title='Minutes Played',
     yaxis_title='Points Scored',
     hovermode='x unified',  # Unified hover for consistent display
-    legend_title_text='Game Outcome'  # Update legend title to say "Game Outcome"
+    legend_title_text='Game Outcome'  # Update legend title
 )
 
 # Show the figure
 fig_scatter.show()
 
 
-# In[27]:
+# In[55]:
 
 
 # Create Dash App
@@ -210,7 +215,9 @@ app.layout = html.Div(
         
         # General introduction paragraph
         html.P(
-            "This app presents an in-depth analysis of Michael Jordan's career performance, including career totals, averages, game stats, and field goal percentage analysis.",
+    "This app takes a look at the statistics of arguably the greatest player to ever play the game of basketball and"
+    "presents an in-depth analysis of Michael Jordan's career performance, including career totals, "
+    "averages, game stats, and field goal percentage analysis.",
             style={'color': '#555', 'textAlign': 'center', 'fontSize': '18px'}
         ),
         
@@ -221,49 +228,69 @@ app.layout = html.Div(
                 html.H2("Analysis & Insights", style={'color': '#333'}),
                 dcc.Markdown(
                     """
-                    Add your detailed analysis for each graph here. Explain trends, highlight key moments in Michael Jordan's career, and discuss how the metrics reflect his performance across different phases of his career.
+                    
+Michael Jordan’s career statistics place him among the greatest players in NBA history. His 30.1 points per game average is the highest of any player in league history, cementing his reputation as an elite scorer. 
+Jordan's 32,292 career points rank him 5th all-time in total points scored, an impressive feat considering he played fewer games than many of the players ranked above him. In addition to his scoring prowess, Jordan 
+contributed significantly in other areas, with 6,672 rebounds and 5,633 assists, showcasing his versatility. His 251.1 playoff games played rank him 5th all-time, further demonstrating his endurance and ability to 
+perform under pressure. These rankings emphasize not only Jordan's dominance but also his all-around impact on the game, across multiple eras.
                     """,
                     style={'color': '#333'}
                 )
             ]
         ),
 
-        # Section for career totals
+        # Side-by-side layout for Career Totals and Career Averages (same size)
         html.Div([
-            html.H2("Michael Jordan's Career Totals (All Games)", style={'color': '#333'}),
-            dcc.Graph(figure=fig_totals),
-            html.P("This graph represents Michael Jordan's total statistics across all games in his career.", style={'color': '#555'})
-        ], style={'marginTop': '20px'}),
+            # Career Totals Section
+            html.Div([
+                html.H2("Career Totals (All Games)", style={'color': '#333', 'textAlign': 'center'}),
+                dcc.Graph(figure=fig_totals, style={'height': '500px'}),  # Fixed height for uniformity
+                 html.P(
+                    "This chart highlights Michael Jordan's per-game performance averages throughout his career, including points, assists, and rebounds. MJ has amassed an incredible 32,292 points in his career." 
+                    "However he is 6,360 points behind the current all-time scoring leader Lebron James and that gap is still growing becuase the timeless 39 year old LBJ is going into his 21st season.  ", 
+                    style={'color': '#555', 'textAlign': 'center'})
+            ], style={'width': '48%', 'display': 'inline-block', 'padding': '10px', 'verticalAlign': 'top'}),
 
-        # Section for career averages
-        html.Div([
-            html.H2("Michael Jordan's Career Averages (Per Game)", style={'color': '#333'}),
-            dcc.Graph(figure=fig_avg),
-            html.P("This chart highlights Michael Jordan's per-game performance averages throughout his career, including points, assists, and rebounds.", style={'color': '#555'})
-        ], style={'marginTop': '20px'}),
+            # Career Averages Section
+            html.Div([
+                html.H2("Career Averages (Per Game)", style={'color': '#333', 'textAlign': 'center'}),
+                dcc.Graph(figure=fig_avg, style={'height': '500px'}),  # Fixed height for uniformity
+                html.P(
+                    "This chart highlights Michael Jordan's per-game performance averages throughout his career, including an astounding 30.1 points per game, the highest in NBA history. In addition to scoring," 
+                    "Jordan averaged 6.2 rebounds and 5.3 assists per game, showcasing his versatility on both ends of the court.", 
+                    style={'color': '#555', 'textAlign': 'center'})
+            ], style={'width': '48%', 'display': 'inline-block', 'padding': '10px', 'verticalAlign': 'top'}),
+        ], style={'marginTop': '20px', 'textAlign': 'center', 'display': 'flex', 'justifyContent': 'space-between'}),
 
         # Section for scatter plot (Points vs Minutes Played)
         html.Div([
-            html.H2("Points Scored vs Minutes Played (Colored by Wins and Losses)", style={'color': '#333'}),
+            html.H2("Points Scored vs Minutes Played (Colored by Wins and Losses)", style={'color': '#333', 'textAlign': 'center'}),
             dcc.Graph(figure=fig_scatter),
-            html.P("This scatter plot shows the relationship between minutes played and points scored, with colors indicating wins and losses.", style={'color': '#555'})
+            html.P("This scatter plot is interactive! Feel free to hover over data points or draw a box to view specific sections of data! Two cool data points to show are Michael Jordan's career-high points"
+                   " in a single game came on March 28, 1990, when he scored 69 points in an overtime victory against none other but the Cleveland Cavaliers. Also Michael Jordan played an incredible 56 minutes in a game during"
+                   ". This occurred on December 18, 1987, in a thrilling 4-overtime loss against the Utah Jazz!", 
+                   style={'color': '#555', 'textAlign': 'center'})
         ], style={'marginTop': '20px'}),
 
-        # Section for performance over time
+        # Side-by-side layout for Performance over Time and FG% by Game Difficulty
         html.Div([
-            html.H2("Average Points, Assists, Rebounds, and Minutes Played by Age", style={'color': '#333'}),
-            dcc.Graph(figure=fig1),
-            html.P("This line graph shows how Michael Jordan's performance changed over time in terms of points, assists, rebounds, and minutes played by age.", style={'color': '#555'})
-        ], style={'marginTop': '20px'}),
+            # Performance over Time Section
+            html.Div([
+                html.H2("Performance Over Time (Points, Assists, Rebounds)", style={'color': '#333', 'textAlign': 'center'}),
+                dcc.Graph(figure=fig1, style={'height': '500px'}),
+                html.P("This line graph shows how Michael Jordan's performance changed over time in terms of points, assists, rebounds, and minutes played by age.", style={'color': '#555', 'textAlign': 'center'})
+            ], style={'width': '48%', 'display': 'inline-block', 'padding': '10px', 'verticalAlign': 'top'}),
 
-        # Section for FG% by game difficulty
-        html.Div([
-            html.H2("Average Field Goal Percentage by Game Difficulty", style={'color': '#333'}),
-            dcc.Graph(figure=fig),
-            html.P("This bar chart breaks down Michael Jordan's average field goal percentage based on the difficulty of the game (point differential).", style={'color': '#555'})
-        ], style={'marginTop': '20px'}),
+            # FG% by Game Difficulty Section
+            html.Div([
+                html.H2("Field Goal Percentage by Game Difficulty", style={'color': '#333', 'textAlign': 'center'}),
+                dcc.Graph(figure=fig, style={'height': '500px'}),
+                html.P("This bar chart breaks down Michael Jordan's average field goal percentage based on the difficulty of the game (point differential).", style={'color': '#555', 'textAlign': 'center'})
+            ], style={'width': '48%', 'display': 'inline-block', 'padding': '10px', 'verticalAlign': 'top'}),
+        ], style={'marginTop': '20px', 'textAlign': 'center', 'display': 'flex', 'justifyContent': 'space-between'}),
     ]
 )
+
 
 
 # Run the app
