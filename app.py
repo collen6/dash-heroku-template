@@ -10,19 +10,19 @@ from dash import html
 from dash.dependencies import Input, Output
 
 
-# In[4]:
+# In[9]:
 
 
 mj_df = pd.read_csv("https://sports-statistics.com/database/basketball-data/nba/michael-jordan-nba-career-regular-season-stats-by-game.csv", low_memory=False)
 
 
-# In[5]:
+# In[10]:
 
 
 mj_df.head().T
 
 
-# In[6]:
+# In[11]:
 
 
 # Calculate career averages for key metrics
@@ -36,7 +36,7 @@ career_stats_df.columns = ['Metric', 'Career Average (Per Game)']
 print(career_stats_df)
 
 
-# In[7]:
+# In[12]:
 
 
 # Calculate career totals for key metrics
@@ -50,7 +50,7 @@ career_totals_df.columns = ['Metric', 'Career Total (All Games)']
 print(career_totals_df)
 
 
-# In[8]:
+# In[13]:
 
 
 fig_avg = px.bar(career_stats_df, x='Metric', y='Career Average (Per Game)',
@@ -76,7 +76,7 @@ fig_avg.update_traces(
 fig_avg.show()
 
 
-# In[9]:
+# In[14]:
 
 
 fig_totals = px.bar(career_totals_df, x='Metric', y='Career Total (All Games)',
@@ -102,7 +102,7 @@ fig_totals.update_traces(
 fig_totals.show()
 
 
-# In[10]:
+# In[15]:
 
 
 # Create bins for point differential
@@ -142,7 +142,19 @@ fig.update_traces(
 fig.show()
 
 
-# In[11]:
+# In[33]:
+
+
+bar_chart_caption = (
+    "This bar chart displays Michael Jordan's average field goal percentage across different game difficulties, "
+    "from 'Big Loss' to 'Big Win'. The x-axis categorizes the games based on the point differential, and the y-axis shows the shooting efficiency in percentage. "
+    "The chart highlights how Jordan's performance typically improved in games where his team won by larger margins. "
+    "Notably, his field goal percentage peaked in 'Big Win' scenarios, suggesting that either he performed exceptionally well in less competitive games "
+    "or his stellar play was crucial in securing large victories."
+)
+
+
+# In[16]:
 
 
 fig1 = px.line(mj_df, x='Age', y=['PTS', 'AST', 'TRB', 'MP'],
@@ -168,7 +180,20 @@ fig1.update_traces(line=dict(width=1.5))
 fig1.show()
 
 
-# In[47]:
+# In[17]:
+
+
+line_caption = (
+    "This line graph presents Michael Jordan's performance metrics throughout his career, highlighting points (PTS) in purple, "
+    "assists (AST) in red, total rebounds (TRB) in green, and minutes played (MP) in blue. The x-axis represents his age from 22 to 40 years. "
+    "Notable gaps in his career around ages 30-32 and 35-38 correspond to his retirements. During his first retirement, MJ left to play professional "
+    "baseball for the Birmingham Barons, a minor league affiliate of the Chicago White Sox. Following MJ's second retirement, he returned to play for the "
+    "Washington Wizards. In two seasons with the Wizards, the team finished with 74 wins and 90 losses and failed to make the playoffs both years. "
+    "Not even the GOAT could save the Wizards."
+)
+
+
+# In[18]:
 
 
 # Convert 'Win' column to categorical strings for discrete color mapping
@@ -200,7 +225,7 @@ fig_scatter.update_layout(
 fig_scatter.show()
 
 
-# In[55]:
+# In[37]:
 
 
 # Create Dash App
@@ -278,14 +303,14 @@ perform under pressure. These rankings emphasize not only Jordan's dominance but
             html.Div([
                 html.H2("Performance Over Time (Points, Assists, Rebounds)", style={'color': '#333', 'textAlign': 'center'}),
                 dcc.Graph(figure=fig1, style={'height': '500px'}),
-                html.P("This line graph shows how Michael Jordan's performance changed over time in terms of points, assists, rebounds, and minutes played by age.", style={'color': '#555', 'textAlign': 'center'})
+                html.P(line_caption, style={'color': '#555', 'textAlign': 'center'})
             ], style={'width': '48%', 'display': 'inline-block', 'padding': '10px', 'verticalAlign': 'top'}),
 
             # FG% by Game Difficulty Section
             html.Div([
                 html.H2("Field Goal Percentage by Game Difficulty", style={'color': '#333', 'textAlign': 'center'}),
                 dcc.Graph(figure=fig, style={'height': '500px'}),
-                html.P("This bar chart breaks down Michael Jordan's average field goal percentage based on the difficulty of the game (point differential).", style={'color': '#555', 'textAlign': 'center'})
+                html.P(bar_chart_caption, style={'color': '#555', 'textAlign': 'center'})
             ], style={'width': '48%', 'display': 'inline-block', 'padding': '10px', 'verticalAlign': 'top'}),
         ], style={'marginTop': '20px', 'textAlign': 'center', 'display': 'flex', 'justifyContent': 'space-between'}),
     ]
